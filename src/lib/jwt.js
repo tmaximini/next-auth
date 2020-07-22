@@ -60,6 +60,7 @@ const decode = async ({
     maxTokenAge: `${maxAge}s`,
     algorithms: [DEFAULT_SIGNATURE_ALGORITHM]
   },
+  verify,
   encryptionKey,
   decryptionKey = encryptionKey, // Optional (defaults to encryptionKey)
   decryptionOptions = {
@@ -82,6 +83,10 @@ const decode = async ({
     tokenToVerify = decryptedToken.toString('utf8')
   }
 
+  if (!verify) {
+    return tokenToVerify
+  }
+
   // Signing Key
   const _signingKey = (verificationKey)
     ? jose.JWK.asKey(JSON.parse(verificationKey))
@@ -97,7 +102,8 @@ const getToken = async (args) => {
     // Use secure prefix for cookie name, unless URL is NEXTAUTH_URL is http://
     // or not set (e.g. development or test instance) case use unprefixed name
     secureCookie = !(!process.env.NEXTAUTH_URL || process.env.NEXTAUTH_URL.startsWith('http://')),
-    cookieName = (secureCookie) ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
+    cookieName = (secureCookie) ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+    verify = true
   } = args
   if (!req) throw new Error('Must pass `req` to JWT getToken()')
 
@@ -113,7 +119,7 @@ const getToken = async (args) => {
   }
 
   try {
-    return await decode({ token, ...args })
+    return await decode({ token, verify, ...args })
   } catch (error) {
     return null
   }

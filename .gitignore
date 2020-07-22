@@ -2,7 +2,6 @@
 .env
 .vscode
 node_modules
-dist
 .DS_Store# Dependencies
 /node_modules
 
